@@ -7,7 +7,12 @@ const app = require("./app");
 const { seedInitialData } = require("./utils/seedData");
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/taskflow_ai";
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  console.error("MONGO_URI is missing");
+  process.exit(1);
+}
 
 mongoose
   .connect(MONGO_URI)
@@ -19,5 +24,6 @@ mongoose
     });
   })
   .catch((error) => {
-    console.error("MongoDB Connection Error:", error.message);
+    console.error("MongoDB Connection Error:", error);
+    process.exit(1);
   });
