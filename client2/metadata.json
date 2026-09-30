@@ -1,0 +1,6 @@
+{
+  "name": "TaskFlow AI - Project Management Dashboard",
+  "description": "SaaS Project Management Dashboard featuring KPI cards, project progress tracking, Kanban task board, real-time activity stream, AI copilot, and a Dribbble-inspired split-screen Sign In & Register authentication suite.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
