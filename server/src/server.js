@@ -1,6 +1,16 @@
 require("dotenv").config();
 
 console.log("JWT_SECRET LOADED:", process.env.JWT_SECRET ? "YES" : "NO");
+console.log("MONGO_URI EXISTS:", !!process.env.MONGO_URI);
+
+if (process.env.MONGO_URI) {
+  try {
+    const host = new URL(process.env.MONGO_URI).hostname;
+    console.log("MONGO HOST:", host);
+  } catch (error) {
+    console.log("MONGO URI FORMAT INVALID");
+  }
+}
 
 const mongoose = require("mongoose");
 const app = require("./app");
