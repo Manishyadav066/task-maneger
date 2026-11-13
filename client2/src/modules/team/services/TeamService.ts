@@ -4,7 +4,7 @@ import type {
   AddMemberResponse,
   InviteMemberInput,
   UpdateMemberInput,
-} from "../types/team.Types";
+} from "../types/Team.Types";
 
 export const teamService = {
   async getMembers(workspaceId: string): Promise<any[]> {
