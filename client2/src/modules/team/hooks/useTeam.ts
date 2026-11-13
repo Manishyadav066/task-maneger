@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { teamService } from "../services/teamService";
+import { teamService } from "../services/TeamService";
 
 import type {
   InviteMemberInput,
   UpdateMemberInput,
-} from "../types/team.Types";
+} from "../types/Team.Types";
 
 export function useTeam(workspaceId?: string) {
   const [members, setMembers] = useState<any[]>([]);
