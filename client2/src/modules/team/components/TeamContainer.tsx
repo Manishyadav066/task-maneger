@@ -2,7 +2,7 @@
 import React from "react";
 
 import { useTeam } from "../hooks/useTeam";
-import { TeamView } from "../ui/teamView";
+import { TeamView } from "../ui/TeamView";
 
 interface TeamContainerProps {
   workspaceId?: string;
