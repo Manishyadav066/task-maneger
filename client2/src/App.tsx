@@ -18,7 +18,8 @@ export default function App() {
     "landing",
   );
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  // User must login before accessing the dashboard.
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   const [authInitialMode, setAuthInitialMode] = useState<"signin" | "register">(
     "signin",
@@ -80,16 +81,12 @@ export default function App() {
     handleDeleteNotification,
   } = useTaskFlowState();
 
-  /*
-   * Initial loading
-   */
+  // Initial loading
   if (loading) {
     return <LoadingScreen />;
   }
 
-  /*
-   * Search
-   */
+  // Search
   const displayTasks = searchQuery.trim()
     ? tasks.filter(
         (task) =>
@@ -100,9 +97,7 @@ export default function App() {
       )
     : tasks;
 
-  /*
-   * VIEW 1: LANDING PAGE
-   */
+  // VIEW 1: LANDING PAGE
   if (currentView === "landing") {
     return (
       <LandingContainer
@@ -114,15 +109,17 @@ export default function App() {
           setAuthInitialMode("signin");
           setCurrentView("auth");
         }}
-        onOpenDashboard={() => setCurrentView("app")}
+        // Live Demo now requires authentication.
+        onOpenDashboard={() => {
+          setAuthInitialMode("signin");
+          setCurrentView("auth");
+        }}
         isAuthenticated={isAuthenticated}
       />
     );
   }
 
-  /*
-   * VIEW 2: AUTHENTICATION
-   */
+  // VIEW 2: AUTHENTICATION
   if (currentView === "auth") {
     return (
       <AuthPage
@@ -144,9 +141,29 @@ export default function App() {
     );
   }
 
-  /*
-   * VIEW 3: MAIN SAAS APPLICATION
-   */
+  // VIEW 3: MAIN SAAS APPLICATION
+  // Do not render the dashboard for unauthenticated users.
+  if (!isAuthenticated) {
+    return (
+      <AuthPage
+        initialMode="signin"
+        showBackToDashboard={false}
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          setIsAuthenticated(true);
+          setCurrentView("app");
+
+          setUsers((prev) =>
+            prev.some((u) => u.email === user.email) ? prev : [...prev, user],
+          );
+
+          showToast(`Welcome, ${user.name}!`);
+        }}
+        onCancel={() => setCurrentView("landing")}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex text-slate-900 antialiased font-sans">
       <Toast message={toastMessage} />
@@ -155,10 +172,8 @@ export default function App() {
       <Sidebar
         activeTab={activeTab}
         onTabChange={(tab) => {
-          /*
-           * AI tab intentionally removed for now.
-           * Normal navigation continues to work.
-           */
+          // AI tab intentionally removed for now.
+          // Normal navigation continues to work.
           if (tab === "ai") {
             return;
           }
@@ -188,12 +203,8 @@ export default function App() {
           onMarkNotificationRead={handleMarkNotificationRead}
           onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
           onDeleteNotification={handleDeleteNotification}
-          /*
-           * AI callback removed.
-           *
-           * Existing Header component may still expect this prop.
-           * We temporarily keep a no-op callback so UI does not break.
-           */
+          // AI callback removed.
+          // Keep no-op callback if Header expects this prop.
           onOpenAIGenerator={() => {}}
           onOpenCreateTask={() => setIsCreateTaskOpen(true)}
           searchQuery={searchQuery}
@@ -233,11 +244,7 @@ export default function App() {
               setSelectedProjectId(projectId);
               setActiveTab("tasks");
             }}
-            /*
-             * AI callbacks are temporarily disabled.
-             * They remain as no-op callbacks only if
-             * AppViewRouter currently requires these props.
-             */
+            // AI callbacks temporarily disabled.
             onOpenAISummary={() => {}}
             onOpenAIGenerator={() => {}}
             onOpenCreateTask={() => setIsCreateTaskOpen(true)}

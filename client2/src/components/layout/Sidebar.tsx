@@ -1,4 +1,8 @@
+
+'use client';
+
 import React, { useState } from 'react';
+
 import {
   LayoutDashboard,
   FolderKanban,
@@ -10,12 +14,11 @@ import {
   FileText,
   Settings,
   Layers,
-  ChevronRight,
   ChevronDown,
   ShieldCheck,
-  LogIn,
   Building2,
 } from 'lucide-react';
+
 import { Project, User } from '../../types';
 
 export type NavigationTab =
@@ -33,14 +36,34 @@ export type NavigationTab =
 interface SidebarProps {
   activeTab: NavigationTab;
   onTabChange: (tab: NavigationTab) => void;
+
   projects: Project[];
+
   selectedProjectId?: string;
   onSelectProject: (projectId: string) => void;
+
   currentUser?: User;
-  onOpenAuth?: () => void;
+
+  /**
+   * false = sidebar visible
+   * true  = sidebar completely hidden
+   */
   isCollapsed?: boolean;
+
+  /**
+   * Parent component se sidebar open/close control hoga.
+   */
   onToggleCollapse?: () => void;
+
   unreadCount?: number;
+}
+
+interface NavItem {
+  id: NavigationTab;
+  label: string;
+  icon: React.ElementType;
+  badge?: number;
+  highlight?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -50,282 +73,964 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedProjectId,
   onSelectProject,
   currentUser,
-  onOpenAuth,
   isCollapsed = false,
-  onToggleCollapse,
   unreadCount = 3,
 }) => {
-  const [isActiveProjectsOpen, setIsActiveProjectsOpen] = useState(true);
+  const [isActiveProjectsOpen, setIsActiveProjectsOpen] =
+    useState(true);
 
-  const navItems = [
-    { id: 'dashboard' as NavigationTab, label: 'Overview', icon: LayoutDashboard },
-    { id: 'workspaces' as NavigationTab, label: 'Workspaces', icon: Building2 },
-    { id: 'projects' as NavigationTab, label: 'Projects', icon: FolderKanban, badge: projects.length },
-    { id: 'tasks' as NavigationTab, label: 'Tasks', icon: CheckSquare },
-    { id: 'notifications' as NavigationTab, label: 'Notifications', icon: Bell, badge: unreadCount },
-    { id: 'files' as NavigationTab, label: 'Files', icon: FileText },
-    { id: 'analytics' as NavigationTab, label: 'Analytics', icon: BarChart3 },
-    { id: 'team' as NavigationTab, label: 'Team', icon: Users },
-    { id: 'ai' as NavigationTab, label: 'AI Assistant', icon: Sparkles, highlight: true },
+  // ==========================================================
+  // NAVIGATION
+  // ==========================================================
+
+  const mainMenu: NavItem[] = [
+    {
+      id: 'dashboard',
+      label: 'Overview',
+      icon: LayoutDashboard,
+    },
+
+    {
+      id: 'workspaces',
+      label: 'Workspaces',
+      icon: Building2,
+    },
+
+    {
+      id: 'projects',
+      label: 'Projects',
+      icon: FolderKanban,
+      badge: projects.length,
+    },
+
+    {
+      id: 'tasks',
+      label: 'Tasks',
+      icon: CheckSquare,
+    },
   ];
 
-  // ==========================================
-  // COLLAPSED SIDEBAR (Icon Only Mode)
-  // ==========================================
+  const toolsMenu: NavItem[] = [
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: Bell,
+      badge: unreadCount,
+    },
+
+    {
+      id: 'files',
+      label: 'Files',
+      icon: FileText,
+    },
+
+    {
+      id: 'analytics',
+      label: 'Analytics',
+      icon: BarChart3,
+    },
+
+    {
+      id: 'team',
+      label: 'Team',
+      icon: Users,
+    },
+
+    {
+      id: 'ai',
+      label: 'AI Assistant',
+      icon: Sparkles,
+      highlight: true,
+    },
+  ];
+
+  // ==========================================================
+  // COLLAPSED STATE
+  // ==========================================================
+
+  /**
+   * Sidebar completely invisible rahega.
+   *
+   * NO:
+   * - hamburger
+   * - 3-line button
+   * - logo
+   * - icons
+   * - mini sidebar
+   * - navigation buttons
+   *
+   * Lekin <aside> ki jagah 0 width element rahega,
+   * jisse parent layout break nahi hoga.
+   */
+
   if (isCollapsed) {
     return (
-      <aside className="w-16 bg-white text-slate-700 flex flex-col items-center shrink-0 border-r border-slate-200 select-none h-screen sticky top-0 z-40 shadow-2xs py-3 transition-all duration-200">
-        {/* Brand Icon */}
-        <div className="flex flex-col items-center gap-2 pb-3 border-b border-slate-100 w-full">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-xs">
-            <Layers className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* Nav Items (Icons Only with Tooltips) */}
-        <div className="flex-1 w-full overflow-y-auto py-4 space-y-1.5 px-2 flex flex-col items-center">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                id={`nav-collapsed-${item.id}-btn`}
-                onClick={() => onTabChange(item.id)}
-                title={item.label}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all relative group cursor-pointer ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-xs shadow-indigo-200'
-                    : item.highlight
-                    ? 'text-indigo-600 hover:bg-indigo-50'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {item.badge !== undefined && (
-                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-white" />
-                )}
-              </button>
-            );
-          })}
-
-          {/* Active Projects Quick Icon */}
-          <button
-            id="collapsed-active-projects-btn"
-            onClick={() => onTabChange('projects')}
-            title="Active Projects"
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-all cursor-pointer relative"
-          >
-            <FolderKanban className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
-          </button>
-        </div>
-
-        {/* Bottom Settings */}
-        <div className="w-full flex flex-col items-center gap-2 pt-3 border-t border-slate-100">
-          <button
-            id="collapsed-settings-btn"
-            onClick={() => onTabChange('settings')}
-            title="Settings"
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
-              activeTab === 'settings'
-                ? 'bg-indigo-600 text-white'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-          </button>
-        </div>
-      </aside>
+      <aside
+        aria-hidden="true"
+        className="
+          w-0
+          min-w-0
+          h-screen
+          shrink-0
+          overflow-hidden
+          border-0
+          p-0
+          m-0
+          bg-transparent
+          transition-all
+          duration-200
+        "
+      />
     );
   }
 
-  // ==========================================
-  // EXPANDED SIDEBAR (Full Mode)
-  // ==========================================
-  return (
-    <aside className="w-64 bg-white text-slate-700 flex flex-col shrink-0 border-r border-slate-200 select-none h-screen sticky top-0 z-40 shadow-2xs transition-all duration-200">
-      {/* Brand Header with Close/Collapse Toggle */}
-      <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100 bg-white">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-xs">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-900 text-base tracking-tight">TaskFlow</span>
-              <span className="text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200/60">
-                AI
-              </span>
-            </div>
-            <span className="text-[11px] text-slate-500 block font-normal -mt-0.5">SaaS Project OS</span>
-          </div>
-        </div>
-      </div>
+  // ==========================================================
+  // NAV ITEM
+  // ==========================================================
 
-      {/* Main Navigation */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        <div>
-          <div className="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            Workspace Menu
-          </div>
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  id={`nav-${item.id}-btn`}
-                  onClick={() => onTabChange(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all group cursor-pointer ${
-                    isActive
-                      ? 'bg-indigo-600 text-white shadow-xs shadow-indigo-200 font-semibold'
-                      : item.highlight
-                      ? 'text-indigo-600 hover:bg-indigo-50/60 font-semibold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon
-                      className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                        isActive
-                          ? 'text-white'
-                          : item.highlight
-                          ? 'text-indigo-600'
-                          : 'text-slate-400 group-hover:text-slate-700'
-                      }`}
-                    />
-                    <span>{item.label}</span>
-                  </div>
-                  {item.badge !== undefined && (
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                        isActive ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                  {item.highlight && !isActive && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold uppercase">
-                      New
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+  const renderNavItem = (item: NavItem) => {
+    const Icon = item.icon;
 
-        {/* Active Projects Button & Accordion */}
-        <div>
-          <button
-            id="sidebar-active-projects-btn"
-            type="button"
-            onClick={() => setIsActiveProjectsOpen(!isActiveProjectsOpen)}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100/90 hover:bg-slate-200/80 transition-all cursor-pointer border border-slate-200/60 shadow-2xs group"
-          >
-            <div className="flex items-center gap-2">
-              <FolderKanban className="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform" />
-              <span>Active Projects</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white text-slate-600 font-bold border border-slate-200">
-                {projects.length}
-              </span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                  isActiveProjectsOpen ? 'rotate-180 text-indigo-600' : ''
-                }`}
-              />
-            </div>
-          </button>
+    const isActive = activeTab === item.id;
 
-          {/* Collapsible Projects List */}
-          {isActiveProjectsOpen && (
-            <div className="mt-1.5 space-y-1 pl-1">
-              {projects.slice(0, 4).map((project) => (
-                <button
-                  key={project.id}
-                  id={`sidebar-project-${project.id}`}
-                  onClick={() => {
-                    onSelectProject(project.id);
-                    onTabChange('tasks');
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs transition-colors text-left cursor-pointer ${
-                    selectedProjectId === project.id && activeTab === 'tasks'
-                      ? 'bg-indigo-50 text-indigo-900 font-bold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 truncate">
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: project.color || '#6366f1' }}
-                    />
-                    <span className="truncate">{project.name}</span>
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-medium shrink-0 ml-1">
-                    {project.progress}%
-                  </span>
-                </button>
-              ))}
-              <button
-                onClick={() => onTabChange('projects')}
-                className="w-full text-left px-3 py-1 text-[11px] text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer"
-              >
-                + View all projects
-              </button>
-            </div>
-          )}
-        </div>
+    return (
+      <button
+        key={item.id}
+        id={`nav-${item.id}-btn`}
+        type="button"
+        onClick={() => onTabChange(item.id)}
+        className={`
+          group
+          w-full
+          min-h-[42px]
+          px-3
+          py-2
+          rounded-xl
 
-      </div>
+          flex
+          items-center
+          justify-between
+          gap-3
 
-      {/* Footer Settings & User Profile (Light Mode) */}
-      <div className="p-3 border-t border-slate-100 bg-slate-50/50 space-y-2">
-        <button
-          id="sidebar-settings-btn"
-          onClick={() => onTabChange('settings')}
-          className={`w-full flex items-center justify-between p-2 rounded-xl text-xs transition-colors cursor-pointer ${
-            activeTab === 'settings'
-              ? 'bg-indigo-50 text-indigo-900 font-bold'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white'
-          }`}
-          title="Workspace Settings"
+          text-left
+          cursor-pointer
+
+          transition-all
+          duration-200
+
+          ${
+            isActive
+              ? `
+                bg-indigo-600
+                text-white
+                font-semibold
+                shadow-sm
+                shadow-indigo-200
+              `
+              : item.highlight
+              ? `
+                  text-indigo-600
+                  font-semibold
+                  hover:bg-indigo-50
+                `
+              : `
+                  text-slate-600
+                  font-medium
+                  hover:bg-slate-100
+                  hover:text-slate-950
+                `
+          }
+        `}
+      >
+        {/* Left */}
+        <div
+          className="
+            flex
+            items-center
+            gap-3
+            min-w-0
+          "
         >
-          <div className="flex items-center gap-2.5">
-            <Settings className="w-4 h-4 text-slate-500" />
-            <span className="font-medium">Settings</span>
+          <Icon
+            className={`
+              w-[18px]
+              h-[18px]
+              shrink-0
+
+              transition-transform
+              duration-200
+
+              group-hover:scale-105
+
+              ${
+                isActive
+                  ? 'text-white'
+                  : item.highlight
+                  ? 'text-indigo-600'
+                  : 'text-slate-400 group-hover:text-slate-700'
+              }
+            `}
+          />
+
+          <span
+            className="
+              truncate
+              text-[14px]
+            "
+          >
+            {item.label}
+          </span>
+        </div>
+
+        {/* Badge */}
+        {item.badge !== undefined && (
+          <span
+            className={`
+              min-w-[28px]
+              h-6
+              px-2
+
+              flex
+              items-center
+              justify-center
+
+              rounded-full
+
+              text-[11px]
+              font-bold
+
+              shrink-0
+
+              ${
+                item.id === 'notifications'
+                  ? 'bg-red-500 text-white'
+                  : isActive
+                  ? 'bg-indigo-700 text-white'
+                  : 'bg-slate-100 text-slate-600'
+              }
+            `}
+          >
+            {item.badge}
+          </span>
+        )}
+
+        {/* New */}
+        {item.highlight && !isActive && (
+          <span
+            className="
+              px-2
+              py-1
+
+              rounded-full
+
+              bg-indigo-100
+              text-indigo-700
+
+              text-[10px]
+              font-bold
+
+              shrink-0
+            "
+          >
+            New
+          </span>
+        )}
+      </button>
+    );
+  };
+
+  // ==========================================================
+  // ACTIVE PROJECTS
+  // ==========================================================
+
+  const renderActiveProjects = () => {
+    return (
+      <div
+        className="
+          rounded-2xl
+          border
+          border-slate-200
+
+          bg-slate-50/70
+
+          overflow-hidden
+        "
+      >
+        {/* Header */}
+
+        <button
+          id="sidebar-active-projects-btn"
+          type="button"
+          onClick={() =>
+            setIsActiveProjectsOpen(!isActiveProjectsOpen)
+          }
+          className="
+            w-full
+
+            px-3.5
+            py-3
+
+            flex
+            items-center
+            justify-between
+
+            text-left
+
+            cursor-pointer
+
+            hover:bg-slate-100
+
+            transition-colors
+          "
+        >
+          <div
+            className="
+              flex
+              items-center
+              gap-2.5
+            "
+          >
+            <FolderKanban
+              className="
+                w-4
+                h-4
+                text-indigo-600
+              "
+            />
+
+            <span
+              className="
+                text-xs
+                font-bold
+                text-slate-800
+              "
+            >
+              Active Projects
+            </span>
+
+            <span
+              className="
+                min-w-[24px]
+                h-5
+                px-1.5
+
+                flex
+                items-center
+                justify-center
+
+                rounded-full
+
+                bg-white
+                border
+                border-slate-200
+
+                text-[10px]
+                font-bold
+                text-slate-600
+              "
+            >
+              {projects.length}
+            </span>
           </div>
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+
+          <ChevronDown
+            className={`
+              w-4
+              h-4
+
+              text-slate-400
+
+              transition-transform
+              duration-200
+
+              ${
+                isActiveProjectsOpen
+                  ? 'rotate-180 text-indigo-600'
+                  : ''
+              }
+            `}
+          />
         </button>
 
-        {/* Current User Card (No Avatar) */}
-        {currentUser && (
-          <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between px-1">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-              <div className="min-w-0">
-                <div className="text-xs font-bold text-slate-900 truncate">{currentUser.name}</div>
-                <div className="text-[10px] text-slate-500 truncate">{currentUser.department}</div>
-              </div>
-            </div>
+        {/* Projects */}
 
-            {onOpenAuth && (
-              <button
-                id="sidebar-switch-auth-btn"
-                onClick={onOpenAuth}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
-                title="Switch User / Sign In UI"
+        {isActiveProjectsOpen && (
+          <div className="px-2 pb-2">
+            {projects.length === 0 ? (
+              <div
+                className="
+                  px-3
+                  py-3
+                  text-xs
+                  text-slate-400
+                "
               >
-                <LogIn className="w-3.5 h-3.5 text-indigo-600" />
-              </button>
+                No active projects
+              </div>
+            ) : (
+              <>
+                {projects.slice(0, 4).map((project) => {
+                  const isSelected =
+                    selectedProjectId === project.id &&
+                    activeTab === 'tasks';
+
+                  return (
+                    <button
+                      key={project.id}
+                      id={`sidebar-project-${project.id}`}
+                      type="button"
+                      onClick={() => {
+                        onSelectProject(project.id);
+                        onTabChange('tasks');
+                      }}
+                      className={`
+                        w-full
+
+                        flex
+                        items-center
+                        justify-between
+
+                        gap-2
+
+                        px-3
+                        py-2
+
+                        rounded-lg
+
+                        text-left
+
+                        cursor-pointer
+
+                        transition-colors
+
+                        ${
+                          isSelected
+                            ? `
+                              bg-white
+                              text-indigo-900
+                              shadow-sm
+                            `
+                            : `
+                              text-slate-600
+                              hover:bg-white
+                              hover:text-slate-900
+                            `
+                        }
+                      `}
+                    >
+                      <div
+                        className="
+                          flex
+                          items-center
+                          gap-2.5
+
+                          min-w-0
+                        "
+                      >
+                        <span
+                          className="
+                            w-2
+                            h-2
+                            rounded-full
+                            shrink-0
+                          "
+                          style={{
+                            backgroundColor:
+                              project.color || '#6366f1',
+                          }}
+                        />
+
+                        <span
+                          className="
+                            truncate
+
+                            text-xs
+                            font-medium
+                          "
+                        >
+                          {project.name}
+                        </span>
+                      </div>
+
+                      <span
+                        className="
+                          text-[10px]
+                          text-slate-400
+                          font-semibold
+                          shrink-0
+                        "
+                      >
+                        {project.progress}%
+                      </span>
+                    </button>
+                  );
+                })}
+
+                {projects.length > 4 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onTabChange('projects')
+                    }
+                    className="
+                      w-full
+
+                      px-3
+                      py-2
+
+                      text-left
+
+                      text-[11px]
+
+                      text-indigo-600
+                      hover:text-indigo-700
+
+                      font-semibold
+
+                      cursor-pointer
+                    "
+                  >
+                    + View all projects
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}
       </div>
+    );
+  };
+
+  // ==========================================================
+  // EXPANDED SIDEBAR
+  // ==========================================================
+
+  return (
+    <aside
+      className="
+        w-[280px]
+        min-w-[280px]
+
+        h-screen
+        sticky
+        top-0
+
+        z-40
+        shrink-0
+
+        bg-white
+        text-slate-700
+
+        flex
+        flex-col
+
+        border-r
+        border-slate-200
+
+        select-none
+
+        shadow-sm
+
+        transition-all
+        duration-200
+      "
+    >
+      {/* ==================================================
+          HEADER
+      ================================================== */}
+
+      <div
+        className="
+          h-[76px]
+
+          px-5
+
+          flex
+          items-center
+
+          border-b
+          border-slate-100
+
+          bg-white
+        "
+      >
+        {/* Logo */}
+
+        <div
+          className="
+            flex
+            items-center
+            gap-3
+          "
+        >
+          <div
+            className="
+              w-11
+              h-11
+
+              rounded-xl
+
+              bg-indigo-600
+
+              flex
+              items-center
+              justify-center
+
+              text-white
+
+              shadow-sm
+            "
+          >
+            <Layers className="w-6 h-6" />
+          </div>
+
+          <div>
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+              "
+            >
+              <span
+                className="
+                  font-bold
+                  text-slate-900
+                  text-lg
+                  tracking-tight
+                "
+              >
+                TaskFlow
+              </span>
+
+              <span
+                className="
+                  text-[10px]
+                  uppercase
+                  font-extrabold
+                  tracking-wider
+
+                  px-2
+                  py-0.5
+
+                  rounded
+
+                  bg-indigo-50
+                  text-indigo-700
+
+                  border
+                  border-indigo-200/60
+                "
+              >
+                AI
+              </span>
+            </div>
+
+            <span
+              className="
+                text-xs
+                text-slate-500
+                block
+                font-normal
+              "
+            >
+              SaaS Project OS
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ==================================================
+          MAIN NAVIGATION
+      ================================================== */}
+
+      <div
+        className="
+          flex-1
+
+          overflow-y-auto
+
+          px-3
+          py-4
+
+          space-y-5
+
+          scrollbar-thin
+        "
+      >
+        {/* Main Menu */}
+
+        <section>
+          <div
+            className="
+              px-3
+              pb-2
+
+              text-[10px]
+              font-extrabold
+
+              text-slate-400
+
+              uppercase
+              tracking-widest
+            "
+          >
+            Main Menu
+          </div>
+
+          <nav className="space-y-1">
+            {mainMenu.map(renderNavItem)}
+          </nav>
+        </section>
+
+        {/* Active Projects */}
+
+        <section>
+          {renderActiveProjects()}
+        </section>
+
+        {/* Tools */}
+
+        <section>
+          <div
+            className="
+              px-3
+              pb-2
+
+              flex
+              items-center
+              gap-2
+            "
+          >
+            <span
+              className="
+                text-[10px]
+                font-extrabold
+
+                text-slate-400
+
+                uppercase
+                tracking-widest
+              "
+            >
+              Tools
+            </span>
+          </div>
+
+          <nav className="space-y-1">
+            {toolsMenu.map(renderNavItem)}
+          </nav>
+        </section>
+
+        {/* Settings */}
+
+        <section>
+          <div
+            className="
+              px-3
+              pb-2
+
+              text-[10px]
+              font-extrabold
+
+              text-slate-400
+
+              uppercase
+              tracking-widest
+            "
+          >
+            Settings
+          </div>
+
+          <button
+            id="sidebar-settings-btn"
+            type="button"
+            onClick={() =>
+              onTabChange('settings')
+            }
+            className={`
+              w-full
+
+              min-h-[42px]
+
+              px-3
+              py-2.5
+
+              rounded-xl
+
+              flex
+              items-center
+              gap-3
+
+              text-left
+
+              cursor-pointer
+
+              transition-all
+
+              ${
+                activeTab === 'settings'
+                  ? `
+                    bg-indigo-600
+                    text-white
+                    font-semibold
+                    shadow-sm
+                  `
+                  : `
+                    text-slate-600
+                    font-medium
+                    hover:bg-slate-100
+                    hover:text-slate-950
+                  `
+              }
+            `}
+          >
+            <Settings
+              className={`
+                w-[18px]
+                h-[18px]
+
+                ${
+                  activeTab === 'settings'
+                    ? 'text-white'
+                    : 'text-slate-400'
+                }
+              `}
+            />
+
+            <span className="text-[14px]">
+              Settings
+            </span>
+
+            <ShieldCheck
+              className={`
+                w-4
+                h-4
+                ml-auto
+
+                ${
+                  activeTab === 'settings'
+                    ? 'text-emerald-300'
+                    : 'text-emerald-500'
+                }
+              `}
+            />
+          </button>
+        </section>
+      </div>
+
+      {/* ==================================================
+          FOOTER / USER
+      ================================================== */}
+
+      <div
+        className="
+          p-3
+
+          border-t
+          border-slate-100
+
+          bg-slate-50/70
+
+          space-y-2
+        "
+      >
+        {/* User */}
+
+        {currentUser && (
+          <div
+            className="
+              flex
+              items-center
+              justify-between
+
+              px-2
+              py-2
+
+              rounded-xl
+
+              bg-white
+
+              border
+              border-slate-200
+            "
+          >
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+
+                min-w-0
+              "
+            >
+              <span
+                className="
+                  w-2
+                  h-2
+
+                  rounded-full
+
+                  bg-emerald-500
+
+                  shrink-0
+                "
+              />
+
+              <div className="min-w-0">
+                <div
+                  className="
+                    text-xs
+                    font-bold
+                    text-slate-900
+                    truncate
+                  "
+                >
+                  {currentUser.name}
+                </div>
+
+                <div
+                  className="
+                    text-[10px]
+                    text-slate-500
+                    truncate
+                  "
+                >
+                  {currentUser.department}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Security */}
+
+        <div
+          className="
+            flex
+            items-center
+            justify-center
+
+            gap-1.5
+
+            text-[10px]
+            text-slate-400
+          "
+        >
+          <ShieldCheck
+            className="
+              w-3
+              h-3
+
+              text-emerald-500
+            "
+          />
+
+          Workspace secured
+        </div>
+      </div>
     </aside>
   );
 };
+
+export default Sidebar;
