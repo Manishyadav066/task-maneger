@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -31,13 +30,10 @@ import {
   CheckCircle2,
   Smartphone,
   Monitor,
+  LogOut,
 } from "lucide-react";
 
-import {
-  User as UserType,
-  Workspace,
-  Notification,
-} from "../../types";
+import { User as UserType, Workspace, Notification } from "../../types";
 
 interface HeaderProps {
   currentUser?: UserType;
@@ -128,26 +124,24 @@ export const Header: React.FC<HeaderProps> = ({
   isSidebarCollapsed = false,
 
   onToggleSidebar,
+
+  onSignOut,
 }) => {
   // ==========================================================
   // DROPDOWN STATES
   // ==========================================================
 
-  const [showWorkspaceDropdown, setShowWorkspaceDropdown] =
-    useState(false);
+  const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false);
 
-  const [showNotificationDrawer, setShowNotificationDrawer] =
-    useState(false);
+  const [showNotificationDrawer, setShowNotificationDrawer] = useState(false);
 
-  const [showProfileMenu, setShowProfileMenu] =
-    useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // ==========================================================
   // PROFILE VIEW
   // ==========================================================
 
-  const [showProfileView, setShowProfileView] =
-    useState(false);
+  const [showProfileView, setShowProfileView] = useState(false);
 
   const [profileSection, setProfileSection] =
     useState<ProfileSection>("overview");
@@ -156,85 +150,66 @@ export const Header: React.FC<HeaderProps> = ({
   // PROFILE FORM STATES
   // ==========================================================
 
-  const [profileName, setProfileName] =
-    useState(currentUser?.name || "");
+  const [profileName, setProfileName] = useState(currentUser?.name || "");
 
-  const [profileEmail, setProfileEmail] =
-    useState(currentUser?.email || "");
+  const [profileEmail, setProfileEmail] = useState(currentUser?.email || "");
 
-  const [profileSaved, setProfileSaved] =
-    useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
 
   // ==========================================================
   // PASSWORD STATES
   // ==========================================================
 
-  const [currentPassword, setCurrentPassword] =
-    useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
 
-  const [newPassword, setNewPassword] =
-    useState("");
+  const [newPassword, setNewPassword] = useState("");
 
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [showCurrentPassword, setShowCurrentPassword] =
-    useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 
-  const [showNewPassword, setShowNewPassword] =
-    useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [passwordMessage, setPasswordMessage] =
-    useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
 
   // ==========================================================
   // NOTIFICATION SETTINGS
   // ==========================================================
 
-  const [emailNotifications, setEmailNotifications] =
-    useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
 
-  const [taskNotifications, setTaskNotifications] =
-    useState(true);
+  const [taskNotifications, setTaskNotifications] = useState(true);
 
-  const [mentionNotifications, setMentionNotifications] =
-    useState(true);
+  const [mentionNotifications, setMentionNotifications] = useState(true);
 
-  const [workspaceNotifications, setWorkspaceNotifications] =
-    useState(true);
+  const [workspaceNotifications, setWorkspaceNotifications] = useState(true);
 
   // ==========================================================
   // WORKSPACE SETTINGS
   // ==========================================================
 
-  const [workspaceSaved, setWorkspaceSaved] =
-    useState(false);
+  const [workspaceSaved, setWorkspaceSaved] = useState(false);
 
-  const [workspaceName, setWorkspaceName] =
-    useState(activeWorkspace?.name || "");
+  const [workspaceName, setWorkspaceName] = useState(
+    activeWorkspace?.name || "",
+  );
 
   // ==========================================================
   // USER DATA
   // ==========================================================
 
-  const userName =
-    currentUser?.name?.trim() || "User";
+  const userName = currentUser?.name?.trim() || "User";
 
   const avatarUrl =
-    typeof currentUser?.avatar === "string"
-      ? currentUser.avatar.trim()
-      : "";
+    typeof currentUser?.avatar === "string" ? currentUser.avatar.trim() : "";
 
-  const hasAvatar =
-    avatarUrl.length > 0;
+  const hasAvatar = avatarUrl.length > 0;
 
-  const unreadCount =
-    notifications.filter(
-      (notification) => !notification.read,
-    ).length;
+  const unreadCount = notifications.filter(
+    (notification) => !notification.read,
+  ).length;
 
   // ==========================================================
   // USER INITIAL
@@ -274,6 +249,21 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   // ==========================================================
+  // SIGN OUT
+  // ==========================================================
+
+  const handleSignOut = () => {
+    setShowProfileMenu(false);
+    setShowWorkspaceDropdown(false);
+    setShowNotificationDrawer(false);
+    setShowProfileView(false);
+
+    if (onSignOut) {
+      onSignOut();
+    }
+  };
+
+  // ==========================================================
   // PROFILE OPEN / CLOSE
   // ==========================================================
 
@@ -302,9 +292,7 @@ export const Header: React.FC<HeaderProps> = ({
     setWorkspaceSaved(false);
   };
 
-  const openProfileSection = (
-    section: ProfileSection,
-  ) => {
+  const openProfileSection = (section: ProfileSection) => {
     setProfileSection(section);
 
     setProfileSaved(false);
@@ -316,13 +304,8 @@ export const Header: React.FC<HeaderProps> = ({
   // AVATAR
   // ==========================================================
 
-  const renderAvatar = (
-    size: "small" | "large" = "small",
-  ) => {
-    const sizeClass =
-      size === "large"
-        ? "text-base"
-        : "text-sm";
+  const renderAvatar = (size: "small" | "large" = "small") => {
+    const sizeClass = size === "large" ? "text-base" : "text-sm";
 
     if (hasAvatar) {
       return (
@@ -336,15 +319,11 @@ export const Header: React.FC<HeaderProps> = ({
               object-cover
             "
             onError={(event) => {
-              event.currentTarget.style.display =
-                "none";
+              event.currentTarget.style.display = "none";
 
-              const fallback =
-                event.currentTarget.nextElementSibling;
+              const fallback = event.currentTarget.nextElementSibling;
 
-              if (
-                fallback instanceof HTMLElement
-              ) {
+              if (fallback instanceof HTMLElement) {
                 fallback.style.display = "flex";
               }
             }}
@@ -425,34 +404,22 @@ export const Header: React.FC<HeaderProps> = ({
   const handleChangePassword = () => {
     setPasswordMessage("");
 
-    if (
-      !currentPassword ||
-      !newPassword ||
-      !confirmPassword
-    ) {
-      setPasswordMessage(
-        "Please fill all password fields.",
-      );
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordMessage("Please fill all password fields.");
       return;
     }
 
     if (newPassword.length < 8) {
-      setPasswordMessage(
-        "New password must be at least 8 characters.",
-      );
+      setPasswordMessage("New password must be at least 8 characters.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordMessage(
-        "New password and confirm password do not match.",
-      );
+      setPasswordMessage("New password and confirm password do not match.");
       return;
     }
 
-    setPasswordMessage(
-      "Password updated successfully.",
-    );
+    setPasswordMessage("Password updated successfully.");
 
     setCurrentPassword("");
     setNewPassword("");
@@ -528,11 +495,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           cursor-pointer
 
-          ${
-            enabled
-              ? "bg-indigo-600"
-              : "bg-slate-300"
-          }
+          ${enabled ? "bg-indigo-600" : "bg-slate-300"}
         `}
         aria-pressed={enabled}
       >
@@ -553,11 +516,7 @@ export const Header: React.FC<HeaderProps> = ({
             transition-transform
             duration-200
 
-            ${
-              enabled
-                ? "translate-x-5"
-                : "translate-x-0.5"
-            }
+            ${enabled ? "translate-x-5" : "translate-x-0.5"}
           `}
         />
       </button>
@@ -614,11 +573,7 @@ export const Header: React.FC<HeaderProps> = ({
 
               <button
                 type="button"
-                onClick={() =>
-                  openProfileSection(
-                    "edit-profile",
-                  )
-                }
+                onClick={() => openProfileSection("edit-profile")}
                 className="
                   px-3
                   py-1.5
@@ -661,47 +616,28 @@ export const Header: React.FC<HeaderProps> = ({
               "
             >
               <InfoCard
-                icon={
-                  <User className="w-3.5 h-3.5" />
-                }
+                icon={<User className="w-3.5 h-3.5" />}
                 label="Full Name"
-                value={
-                  currentUser?.name ||
-                  "Not available"
-                }
+                value={currentUser?.name || "Not available"}
               />
 
               <InfoCard
-                icon={
-                  <Mail className="w-3.5 h-3.5" />
-                }
+                icon={<Mail className="w-3.5 h-3.5" />}
                 label="Email Address"
-                value={
-                  currentUser?.email ||
-                  "Not available"
-                }
+                value={currentUser?.email || "Not available"}
               />
 
               <InfoCard
-                icon={
-                  <UserCircle className="w-3.5 h-3.5" />
-                }
+                icon={<UserCircle className="w-3.5 h-3.5" />}
                 label="Role"
-                value={
-                  currentUser?.role ||
-                  "Member"
-                }
+                value={currentUser?.role || "Member"}
                 capitalize
               />
 
               <InfoCard
-                icon={
-                  <Building2 className="w-3.5 h-3.5" />
-                }
+                icon={<Building2 className="w-3.5 h-3.5" />}
                 label="Workspace"
-                value={
-                  activeWorkspace.name
-                }
+                value={activeWorkspace.name}
               />
             </div>
           </section>
@@ -745,55 +681,31 @@ export const Header: React.FC<HeaderProps> = ({
               "
             >
               <ProfileOption
-                icon={
-                  <UserCircle className="w-4 h-4" />
-                }
+                icon={<UserCircle className="w-4 h-4" />}
                 title="Account Information"
                 description="View your account details"
-                onClick={() =>
-                  openProfileSection(
-                    "account",
-                  )
-                }
+                onClick={() => openProfileSection("account")}
               />
 
               <ProfileOption
-                icon={
-                  <Pencil className="w-4 h-4" />
-                }
+                icon={<Pencil className="w-4 h-4" />}
                 title="Edit Profile"
                 description="Update your profile information"
-                onClick={() =>
-                  openProfileSection(
-                    "edit-profile",
-                  )
-                }
+                onClick={() => openProfileSection("edit-profile")}
               />
 
               <ProfileOption
-                icon={
-                  <KeyRound className="w-4 h-4" />
-                }
+                icon={<KeyRound className="w-4 h-4" />}
                 title="Change Password"
                 description="Update your account password"
-                onClick={() =>
-                  openProfileSection(
-                    "password",
-                  )
-                }
+                onClick={() => openProfileSection("password")}
               />
 
               <ProfileOption
-                icon={
-                  <ShieldCheck className="w-4 h-4" />
-                }
+                icon={<ShieldCheck className="w-4 h-4" />}
                 title="Security & Privacy"
                 description="Manage security and privacy"
-                onClick={() =>
-                  openProfileSection(
-                    "security",
-                  )
-                }
+                onClick={() => openProfileSection("security")}
               />
             </div>
           </section>
@@ -833,29 +745,17 @@ export const Header: React.FC<HeaderProps> = ({
               "
             >
               <PreferenceCard
-                icon={
-                  <Bell className="w-4 h-4" />
-                }
+                icon={<Bell className="w-4 h-4" />}
                 title="Notification Preferences"
                 description="Control your notifications"
-                onClick={() =>
-                  openProfileSection(
-                    "notifications",
-                  )
-                }
+                onClick={() => openProfileSection("notifications")}
               />
 
               <PreferenceCard
-                icon={
-                  <Settings className="w-4 h-4" />
-                }
+                icon={<Settings className="w-4 h-4" />}
                 title="Workspace Settings"
                 description="Manage workspace configuration"
-                onClick={() =>
-                  openProfileSection(
-                    "workspace",
-                  )
-                }
+                onClick={() => openProfileSection("workspace")}
               />
             </div>
           </section>
@@ -936,9 +836,7 @@ export const Header: React.FC<HeaderProps> = ({
               value={profileName}
               onChange={setProfileName}
               placeholder="Enter your name"
-              icon={
-                <User className="w-4 h-4" />
-              }
+              icon={<User className="w-4 h-4" />}
             />
 
             <FormInput
@@ -947,9 +845,7 @@ export const Header: React.FC<HeaderProps> = ({
               onChange={setProfileEmail}
               placeholder="Enter your email"
               type="email"
-              icon={
-                <Mail className="w-4 h-4" />
-              }
+              icon={<Mail className="w-4 h-4" />}
             />
 
             <div>
@@ -992,16 +888,13 @@ export const Header: React.FC<HeaderProps> = ({
                   text-slate-500
                 "
               >
-                {currentUser?.role ||
-                  "Member"}
+                {currentUser?.role || "Member"}
               </div>
             </div>
           </div>
 
           {profileSaved && (
-            <SuccessMessage>
-              Profile changes saved successfully.
-            </SuccessMessage>
+            <SuccessMessage>Profile changes saved successfully.</SuccessMessage>
           )}
 
           <div
@@ -1015,11 +908,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <button
               type="button"
-              onClick={() =>
-                openProfileSection(
-                  "overview",
-                )
-              }
+              onClick={() => openProfileSection("overview")}
               className="
                 h-10
 
@@ -1085,49 +974,31 @@ export const Header: React.FC<HeaderProps> = ({
       return (
         <div className="space-y-5">
           <AccountDetail
-            icon={
-              <User className="w-4 h-4" />
-            }
+            icon={<User className="w-4 h-4" />}
             title="Full Name"
-            value={
-              currentUser?.name ||
-              "Not available"
-            }
+            value={currentUser?.name || "Not available"}
           />
 
           <AccountDetail
-            icon={
-              <Mail className="w-4 h-4" />
-            }
+            icon={<Mail className="w-4 h-4" />}
             title="Email Address"
-            value={
-              currentUser?.email ||
-              "Not available"
-            }
+            value={currentUser?.email || "Not available"}
           />
 
           <AccountDetail
-            icon={
-              <Building2 className="w-4 h-4" />
-            }
+            icon={<Building2 className="w-4 h-4" />}
             title="Current Workspace"
-            value={
-              activeWorkspace.name
-            }
+            value={activeWorkspace.name}
           />
 
           <AccountDetail
-            icon={
-              <Users className="w-4 h-4" />
-            }
+            icon={<Users className="w-4 h-4" />}
             title="Workspace Members"
             value={`${activeWorkspace.membersCount} members`}
           />
 
           <AccountDetail
-            icon={
-              <ShieldCheck className="w-4 h-4" />
-            }
+            icon={<ShieldCheck className="w-4 h-4" />}
             title="Account Status"
             value="Active"
             status
@@ -1189,8 +1060,7 @@ export const Header: React.FC<HeaderProps> = ({
                   leading-relaxed
                 "
               >
-                Use a strong password with at least
-                8 characters.
+                Use a strong password with at least 8 characters.
               </p>
             </div>
           </div>
@@ -1200,11 +1070,7 @@ export const Header: React.FC<HeaderProps> = ({
             value={currentPassword}
             onChange={setCurrentPassword}
             show={showCurrentPassword}
-            onToggle={() =>
-              setShowCurrentPassword(
-                (prev) => !prev,
-              )
-            }
+            onToggle={() => setShowCurrentPassword((prev) => !prev)}
           />
 
           <PasswordInput
@@ -1212,11 +1078,7 @@ export const Header: React.FC<HeaderProps> = ({
             value={newPassword}
             onChange={setNewPassword}
             show={showNewPassword}
-            onToggle={() =>
-              setShowNewPassword(
-                (prev) => !prev,
-              )
-            }
+            onToggle={() => setShowNewPassword((prev) => !prev)}
           />
 
           <PasswordInput
@@ -1224,11 +1086,7 @@ export const Header: React.FC<HeaderProps> = ({
             value={confirmPassword}
             onChange={setConfirmPassword}
             show={showConfirmPassword}
-            onToggle={() =>
-              setShowConfirmPassword(
-                (prev) => !prev,
-              )
-            }
+            onToggle={() => setShowConfirmPassword((prev) => !prev)}
           />
 
           {passwordMessage && (
@@ -1243,9 +1101,7 @@ export const Header: React.FC<HeaderProps> = ({
                 font-semibold
 
                 ${
-                  passwordMessage.includes(
-                    "successfully",
-                  )
+                  passwordMessage.includes("successfully")
                     ? `
                       bg-emerald-50
                       border
@@ -1308,18 +1164,14 @@ export const Header: React.FC<HeaderProps> = ({
       return (
         <div className="space-y-4">
           <SecurityItem
-            icon={
-              <ShieldCheck className="w-4 h-4" />
-            }
+            icon={<ShieldCheck className="w-4 h-4" />}
             title="Account Security"
             description="Your account is currently active and secured."
             status="Protected"
           />
 
           <SecurityItem
-            icon={
-              <Smartphone className="w-4 h-4" />
-            }
+            icon={<Smartphone className="w-4 h-4" />}
             title="Two-Factor Authentication"
             description="Add an extra layer of security to your account."
             status="Not configured"
@@ -1327,9 +1179,7 @@ export const Header: React.FC<HeaderProps> = ({
           />
 
           <SecurityItem
-            icon={
-              <Monitor className="w-4 h-4" />
-            }
+            icon={<Monitor className="w-4 h-4" />}
             title="Active Sessions"
             description="Review devices currently signed in to your account."
             status="1 active session"
@@ -1337,9 +1187,7 @@ export const Header: React.FC<HeaderProps> = ({
           />
 
           <SecurityItem
-            icon={
-              <Lock className="w-4 h-4" />
-            }
+            icon={<Lock className="w-4 h-4" />}
             title="Privacy"
             description="Your workspace information is protected."
             status="Protected"
@@ -1352,53 +1200,35 @@ export const Header: React.FC<HeaderProps> = ({
     // NOTIFICATIONS
     // ========================================================
 
-    if (
-      profileSection === "notifications"
-    ) {
+    if (profileSection === "notifications") {
       return (
         <div className="space-y-4">
           <NotificationSetting
             title="Email Notifications"
             description="Receive important updates by email."
             enabled={emailNotifications}
-            onChange={() =>
-              setEmailNotifications(
-                (prev) => !prev,
-              )
-            }
+            onChange={() => setEmailNotifications((prev) => !prev)}
           />
 
           <NotificationSetting
             title="Task Notifications"
             description="Get notified about task updates and assignments."
             enabled={taskNotifications}
-            onChange={() =>
-              setTaskNotifications(
-                (prev) => !prev,
-              )
-            }
+            onChange={() => setTaskNotifications((prev) => !prev)}
           />
 
           <NotificationSetting
             title="Mention Notifications"
             description="Receive alerts when someone mentions you."
             enabled={mentionNotifications}
-            onChange={() =>
-              setMentionNotifications(
-                (prev) => !prev,
-              )
-            }
+            onChange={() => setMentionNotifications((prev) => !prev)}
           />
 
           <NotificationSetting
             title="Workspace Notifications"
             description="Receive important workspace activity updates."
             enabled={workspaceNotifications}
-            onChange={() =>
-              setWorkspaceNotifications(
-                (prev) => !prev,
-              )
-            }
+            onChange={() => setWorkspaceNotifications((prev) => !prev)}
           />
 
           <div
@@ -1434,14 +1264,9 @@ export const Header: React.FC<HeaderProps> = ({
                 mt-1
               "
             >
-              You currently have{" "}
-              <strong>
-                {unreadCount}
-              </strong>{" "}
-              unread notification
-              {unreadCount !== 1
-                ? "s"
-                : ""}.
+              You currently have <strong>{unreadCount}</strong> unread
+              notification
+              {unreadCount !== 1 ? "s" : ""}.
             </p>
 
             {unreadCount > 0 && (
@@ -1476,9 +1301,7 @@ export const Header: React.FC<HeaderProps> = ({
     // WORKSPACE
     // ========================================================
 
-    if (
-      profileSection === "workspace"
-    ) {
+    if (profileSection === "workspace") {
       return (
         <div className="space-y-5">
           <div
@@ -1551,9 +1374,7 @@ export const Header: React.FC<HeaderProps> = ({
             value={workspaceName}
             onChange={setWorkspaceName}
             placeholder="Workspace name"
-            icon={
-              <Building2 className="w-4 h-4" />
-            }
+            icon={<Building2 className="w-4 h-4" />}
           />
 
           <div
@@ -1600,8 +1421,8 @@ export const Header: React.FC<HeaderProps> = ({
                     mt-0.5
                   "
                 >
-                  {activeWorkspace.membersCount} people
-                  are currently in this workspace.
+                  {activeWorkspace.membersCount} people are currently in this
+                  workspace.
                 </p>
               </div>
             </div>
@@ -1729,6 +1550,11 @@ export const Header: React.FC<HeaderProps> = ({
           justify-between
 
           shadow-[0_1px_3px_rgba(15,23,42,0.04)]
+
+          relative
+          w-full
+          min-w-0
+          overflow-visible
         "
       >
         {/* ====================================================
@@ -1754,16 +1580,8 @@ export const Header: React.FC<HeaderProps> = ({
               id="sidebar-toggle-header-btn"
               type="button"
               onClick={onToggleSidebar}
-              title={
-                isSidebarCollapsed
-                  ? "Open Sidebar"
-                  : "Close Sidebar"
-              }
-              aria-label={
-                isSidebarCollapsed
-                  ? "Open Sidebar"
-                  : "Close Sidebar"
-              }
+              title={isSidebarCollapsed ? "Open Sidebar" : "Close Sidebar"}
+              aria-label={isSidebarCollapsed ? "Open Sidebar" : "Close Sidebar"}
               className="
                 w-9
                 h-9
@@ -1808,9 +1626,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="workspace-switcher-btn"
               type="button"
               onClick={toggleWorkspaceDropdown}
-              aria-expanded={
-                showWorkspaceDropdown
-              }
+              aria-expanded={showWorkspaceDropdown}
               className="
                 h-9
 
@@ -1907,11 +1723,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                   transition-transform
 
-                  ${
-                    showWorkspaceDropdown
-                      ? "rotate-180 text-indigo-600"
-                      : ""
-                  }
+                  ${showWorkspaceDropdown ? "rotate-180 text-indigo-600" : ""}
                 `}
               />
             </button>
@@ -1926,7 +1738,9 @@ export const Header: React.FC<HeaderProps> = ({
 
                   mt-2
 
-                  w-72
+                  w-[calc(100vw-16px)]
+                  max-w-72
+                  sm:w-72
 
                   bg-white
 
@@ -1998,22 +1812,16 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   ) : (
                     workspaces.map((ws) => {
-                      const isActive =
-                        ws.id ===
-                        activeWorkspace.id;
+                      const isActive = ws.id === activeWorkspace.id;
 
                       return (
                         <button
                           key={ws.id}
                           type="button"
                           onClick={() => {
-                            onSelectWorkspace(
-                              ws,
-                            );
+                            onSelectWorkspace(ws);
 
-                            setShowWorkspaceDropdown(
-                              false,
-                            );
+                            setShowWorkspaceDropdown(false);
                           }}
                           className={`
                             w-full
@@ -2130,6 +1938,9 @@ export const Header: React.FC<HeaderProps> = ({
             className="
               relative
 
+              hidden
+              sm:block
+
               flex-1
 
               min-w-0
@@ -2157,11 +1968,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="global-search-input"
               type="text"
               value={searchQuery}
-              onChange={(e) =>
-                onSearchChange(
-                  e.target.value,
-                )
-              }
+              onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search tasks, projects, tags..."
               className="
                 w-full
@@ -2226,9 +2033,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={toggleNotificationDrawer}
               aria-label="Notifications"
-              aria-expanded={
-                showNotificationDrawer
-              }
+              aria-expanded={showNotificationDrawer}
               className="
                 relative
 
@@ -2284,15 +2089,21 @@ export const Header: React.FC<HeaderProps> = ({
             {showNotificationDrawer && (
               <div
                 className="
-                  absolute
-                  right-0
+                  fixed
+                  right-2
+                  sm:absolute
+                  sm:right-0
 
-                  mt-2
+                  top-16
+                  sm:top-auto
 
-                  w-[calc(100vw-24px)]
+                  mt-0
+                  sm:mt-2
+
+                  w-[calc(100vw-16px)]
                   sm:w-96
 
-                  max-w-96
+                  max-w-[24rem]
 
                   bg-white
 
@@ -2376,9 +2187,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {unreadCount > 0 && (
                     <button
                       type="button"
-                      onClick={() =>
-                        onMarkAllNotificationsRead()
-                      }
+                      onClick={() => onMarkAllNotificationsRead()}
                       className="
                         text-[11px]
 
@@ -2463,11 +2272,10 @@ export const Header: React.FC<HeaderProps> = ({
                       </p>
                     </div>
                   ) : (
-                    notifications.map(
-                      (notif) => (
-                        <div
-                          key={notif.id}
-                          className={`
+                    notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className={`
                             p-3.5
 
                             flex
@@ -2482,23 +2290,23 @@ export const Header: React.FC<HeaderProps> = ({
                                 : "bg-indigo-50/40"
                             }
                           `}
-                        >
-                          <div
-                            className="
+                      >
+                        <div
+                          className="
                               flex-1
                               min-w-0
                             "
-                          >
-                            <div
-                              className="
+                        >
+                          <div
+                            className="
                                 flex
                                 items-center
                                 gap-1.5
                               "
-                            >
-                              {!notif.read && (
-                                <span
-                                  className="
+                          >
+                            {!notif.read && (
+                              <span
+                                className="
                                     w-1.5
                                     h-1.5
 
@@ -2506,11 +2314,11 @@ export const Header: React.FC<HeaderProps> = ({
 
                                     bg-indigo-600
                                   "
-                                />
-                              )}
+                              />
+                            )}
 
-                              <h4
-                                className="
+                            <h4
+                              className="
                                   text-xs
                                   font-semibold
 
@@ -2518,13 +2326,13 @@ export const Header: React.FC<HeaderProps> = ({
 
                                   truncate
                                 "
-                              >
-                                {notif.title}
-                              </h4>
-                            </div>
+                            >
+                              {notif.title}
+                            </h4>
+                          </div>
 
-                            <p
-                              className="
+                          <p
+                            className="
                                 text-xs
                                 text-slate-600
 
@@ -2534,12 +2342,12 @@ export const Header: React.FC<HeaderProps> = ({
 
                                 leading-relaxed
                               "
-                            >
-                              {notif.message}
-                            </p>
+                          >
+                            {notif.message}
+                          </p>
 
-                            <span
-                              className="
+                          <span
+                            className="
                                 text-[10px]
 
                                 text-slate-400
@@ -2548,29 +2356,25 @@ export const Header: React.FC<HeaderProps> = ({
 
                                 block
                               "
-                            >
-                              {notif.timestamp}
-                            </span>
-                          </div>
+                          >
+                            {notif.timestamp}
+                          </span>
+                        </div>
 
-                          <div
-                            className="
+                        <div
+                          className="
                               flex
                               items-center
                               gap-1
 
                               shrink-0
                             "
-                          >
-                            {!notif.read && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  onMarkNotificationRead(
-                                    notif.id,
-                                  )
-                                }
-                                className="
+                        >
+                          {!notif.read && (
+                            <button
+                              type="button"
+                              onClick={() => onMarkNotificationRead(notif.id)}
+                              className="
                                   p-1.5
 
                                   rounded-lg
@@ -2582,20 +2386,16 @@ export const Header: React.FC<HeaderProps> = ({
 
                                   cursor-pointer
                                 "
-                                title="Mark as read"
-                              >
-                                <Check className="w-3.5 h-3.5" />
-                              </button>
-                            )}
+                              title="Mark as read"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                          )}
 
-                            <button
-                              type="button"
-                              onClick={() =>
-                                onDeleteNotification(
-                                  notif.id,
-                                )
-                              }
-                              className="
+                          <button
+                            type="button"
+                            onClick={() => onDeleteNotification(notif.id)}
+                            className="
                                 p-1.5
 
                                 rounded-lg
@@ -2607,14 +2407,13 @@ export const Header: React.FC<HeaderProps> = ({
 
                                 cursor-pointer
                               "
-                              title="Delete notification"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
+                            title="Delete notification"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                      ),
-                    )
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
@@ -2630,9 +2429,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="user-profile-menu-btn"
               type="button"
               onClick={toggleProfileMenu}
-              aria-expanded={
-                showProfileMenu
-              }
+              aria-expanded={showProfileMenu}
               className={`
                 h-10
 
@@ -2727,8 +2524,7 @@ export const Header: React.FC<HeaderProps> = ({
                     truncate
                   "
                 >
-                  {currentUser?.name ||
-                    "User"}
+                  {currentUser?.name || "User"}
                 </p>
 
                 <p
@@ -2744,11 +2540,9 @@ export const Header: React.FC<HeaderProps> = ({
                     mt-0.5
                   "
                 >
-                  {currentUser?.role ===
-                  "owner"
+                  {currentUser?.role === "owner"
                     ? "Workspace Owner"
-                    : currentUser?.role ||
-                      "Member"}
+                    : currentUser?.role || "Member"}
                 </p>
               </div>
 
@@ -2764,11 +2558,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                   transition-transform
 
-                  ${
-                    showProfileMenu
-                      ? "rotate-180 text-indigo-600"
-                      : ""
-                  }
+                  ${showProfileMenu ? "rotate-180 text-indigo-600" : ""}
                 `}
               />
             </button>
@@ -2778,12 +2568,20 @@ export const Header: React.FC<HeaderProps> = ({
             {showProfileMenu && (
               <div
                 className="
-                  absolute
-                  right-0
+                  fixed
+                  right-2
+                  sm:absolute
+                  sm:right-0
 
-                  mt-2
+                  top-16
+                  sm:top-auto
 
-                  w-72
+                  mt-0
+                  sm:mt-2
+
+                  w-[calc(100vw-16px)]
+                  max-w-72
+                  sm:w-72
 
                   bg-white
 
@@ -2845,8 +2643,7 @@ export const Header: React.FC<HeaderProps> = ({
                           truncate
                         "
                       >
-                        {currentUser?.name ||
-                          "User"}
+                        {currentUser?.name || "User"}
                       </h3>
 
                       <p
@@ -2859,8 +2656,7 @@ export const Header: React.FC<HeaderProps> = ({
                           mt-0.5
                         "
                       >
-                        {currentUser?.email ||
-                          "No email available"}
+                        {currentUser?.email || "No email available"}
                       </p>
 
                       <span
@@ -2884,11 +2680,9 @@ export const Header: React.FC<HeaderProps> = ({
                           uppercase
                         "
                       >
-                        {currentUser?.role ===
-                        "owner"
+                        {currentUser?.role === "owner"
                           ? "Owner"
-                          : currentUser?.role ||
-                            "Member"}
+                          : currentUser?.role || "Member"}
                       </span>
                     </div>
                   </div>
@@ -2896,51 +2690,31 @@ export const Header: React.FC<HeaderProps> = ({
 
                 <div className="p-2">
                   <MenuButton
-                    icon={
-                      <UserCircle className="w-4 h-4" />
-                    }
+                    icon={<UserCircle className="w-4 h-4" />}
                     title="Profile"
                     subtitle="View profile"
-                    onClick={
-                      openProfileView
-                    }
+                    onClick={openProfileView}
                   />
 
                   <MenuButton
-                    icon={
-                      <Settings className="w-4 h-4" />
-                    }
+                    icon={<Settings className="w-4 h-4" />}
                     title="Workspace Settings"
                     subtitle="Manage"
                     onClick={() => {
-                      setShowProfileMenu(
-                        false,
-                      );
-                      setProfileSection(
-                        "workspace",
-                      );
-                      setShowProfileView(
-                        true,
-                      );
+                      setShowProfileMenu(false);
+                      setProfileSection("workspace");
+                      setShowProfileView(true);
                     }}
                   />
 
                   <MenuButton
-                    icon={
-                      <SlidersHorizontal className="w-4 h-4" />
-                    }
+                    icon={<SlidersHorizontal className="w-4 h-4" />}
                     title="Notification Preferences"
                     subtitle="Configure"
                     onClick={() => {
-                      setShowProfileMenu(
-                        false,
-                      );
-                      setProfileSection(
-                        "notifications",
-                      );
-                      setShowProfileView(
-                        true,
-                      );
+                      setShowProfileMenu(false);
+                      setProfileSection("notifications");
+                      setShowProfileView(true);
                     }}
                   />
                 </div>
@@ -3000,11 +2774,100 @@ export const Header: React.FC<HeaderProps> = ({
                     Active
                   </span>
                 </div>
+                <div className="border-t border-slate-100" />
+
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="
+                    w-full
+
+                    px-4
+                    py-3
+
+                    flex
+                    items-center
+                    gap-3
+
+                    text-left
+
+                    text-rose-600
+
+                    hover:bg-rose-50
+
+                    transition-colors
+
+                    cursor-pointer
+                  "
+                >
+                  <LogOut className="w-4 h-4 shrink-0" />
+
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold">Logout</p>
+
+                    <p className="text-[10px] text-rose-400 mt-0.5">
+                      Sign out of your account
+                    </p>
+                  </div>
+                </button>
               </div>
             )}
           </div>
         </div>
       </header>
+
+      {/* ==========================================================
+          MOBILE SIDEBAR CLOSE BUTTON
+          This stays above the sidebar so it remains visible when
+          the sidebar is open on small screens.
+      ========================================================== */}
+
+      {onToggleSidebar && !isSidebarCollapsed && (
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          aria-label="Close Sidebar"
+          title="Close Sidebar"
+          className="
+            fixed
+            left-3
+            top-3
+
+            sm:hidden
+
+            z-[200]
+
+            w-10
+            h-10
+
+            rounded-xl
+
+            flex
+            items-center
+            justify-center
+
+            bg-white
+            border
+            border-slate-200
+
+            text-slate-600
+
+            shadow-[0_8px_30px_rgba(15,23,42,0.18)]
+
+            hover:bg-slate-50
+            hover:text-slate-900
+
+            active:scale-95
+
+            transition-all
+            duration-150
+
+            cursor-pointer
+          "
+        >
+          <PanelLeft className="w-4 h-4" />
+        </button>
+      )}
 
       {/* ==========================================================
           PROFILE MODAL
@@ -3046,14 +2909,17 @@ export const Header: React.FC<HeaderProps> = ({
             className="
               relative
 
-              w-full
+              w-[calc(100vw-16px)]
+              sm:w-full
               max-w-2xl
 
-              max-h-[90vh]
+              max-h-[calc(100dvh-1rem)]
+              sm:max-h-[90vh]
 
               bg-white
 
-              rounded-3xl
+              rounded-2xl
+              sm:rounded-3xl
 
               shadow-[0_25px_80px_rgba(15,23,42,0.25)]
 
@@ -3098,15 +2964,10 @@ export const Header: React.FC<HeaderProps> = ({
                     min-w-0
                   "
                 >
-                  {profileSection !==
-                    "overview" && (
+                  {profileSection !== "overview" && (
                     <button
                       type="button"
-                      onClick={() =>
-                        openProfileSection(
-                          "overview",
-                        )
-                      }
+                      onClick={() => openProfileSection("overview")}
                       className="
                         w-9
                         h-9
@@ -3154,8 +3015,7 @@ export const Header: React.FC<HeaderProps> = ({
                         mt-0.5
                       "
                     >
-                      {profileSection ===
-                      "overview"
+                      {profileSection === "overview"
                         ? "Manage your account and workspace"
                         : "Configure your profile settings"}
                     </p>
@@ -3164,9 +3024,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                 <button
                   type="button"
-                  onClick={
-                    closeProfileView
-                  }
+                  onClick={closeProfileView}
                   className="
                     w-9
                     h-9
@@ -3201,8 +3059,11 @@ export const Header: React.FC<HeaderProps> = ({
             <div
               className="
                 overflow-y-auto
+                min-w-0
+                [overflow-wrap:anywhere]
 
-                max-h-[calc(90vh-82px)]
+                max-h-[calc(100dvh-6.5rem)]
+                sm:max-h-[calc(90vh-82px)]
 
                 p-4
                 sm:p-6
@@ -3353,9 +3214,7 @@ const InfoCard = ({
           mb-2
         "
       >
-        <span className="text-slate-400">
-          {icon}
-        </span>
+        <span className="text-slate-400">{icon}</span>
 
         <span
           className="
@@ -3667,8 +3526,7 @@ const SecurityStatus = () => {
             text-emerald-600
           "
         >
-          Your account and workspace are currently
-          active.
+          Your account and workspace are currently active.
         </p>
       </div>
     </div>
@@ -3832,17 +3690,9 @@ const PasswordInput = ({
         />
 
         <input
-          type={
-            show
-              ? "text"
-              : "password"
-          }
+          type={show ? "text" : "password"}
           value={value}
-          onChange={(e) =>
-            onChange(
-              e.target.value,
-            )
-          }
+          onChange={(e) => onChange(e.target.value)}
           placeholder={label}
           className="
             w-full
@@ -3890,11 +3740,7 @@ const PasswordInput = ({
             cursor-pointer
           "
         >
-          {show ? (
-            <EyeOff className="w-4 h-4" />
-          ) : (
-            <Eye className="w-4 h-4" />
-          )}
+          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
       </div>
     </div>
@@ -3955,11 +3801,7 @@ const FormInput = ({
         <input
           type={type}
           value={value}
-          onChange={(e) =>
-            onChange(
-              e.target.value,
-            )
-          }
+          onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           className="
             w-full
@@ -4047,10 +3889,7 @@ const NotificationSetting = ({
         </p>
       </div>
 
-      <ToggleControl
-        enabled={enabled}
-        onChange={onChange}
-      />
+      <ToggleControl enabled={enabled} onChange={onChange} />
     </div>
   );
 };
@@ -4080,11 +3919,7 @@ const ToggleControl = ({
 
         shrink-0
 
-        ${
-          enabled
-            ? "bg-indigo-600"
-            : "bg-slate-300"
-        }
+        ${enabled ? "bg-indigo-600" : "bg-slate-300"}
       `}
       aria-pressed={enabled}
     >
@@ -4105,11 +3940,7 @@ const ToggleControl = ({
 
           transition-transform
 
-          ${
-            enabled
-              ? "translate-x-5"
-              : "translate-x-0.5"
-          }
+          ${enabled ? "translate-x-5" : "translate-x-0.5"}
         `}
       />
     </button>
@@ -4229,11 +4060,7 @@ const SecurityItem = ({
   );
 };
 
-const SuccessMessage = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+const SuccessMessage = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       className="
